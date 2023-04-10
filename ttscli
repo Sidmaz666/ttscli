@@ -1,0 +1,167 @@
+#!/bin/bash
+
+text=$1
+lang=$2
+isPlay=0
+isDownload=0
+isList=0
+
+show_help(){
+echo " 
+  DESC: A CLI Tool to convert Text into Speech.
+
+  [USAGE]: ttscli [TEXT_SPEECH]
+  
+  ttscli 'Text Prompt Here' -p To Play using FFPLAY
+  ttscli 'Text Prompt Here' -d To Download using FFMPEG
+  ttscli 'Text Prompt Here' Get the mp3 URL
+  ttscli -sv | ttscli --show-voices Get list of available voices
+  ttscli -h | ttscli --help View Help!
+
+  [PROMPT FEATURES]:
+
+  **Add a break**
+
+  Mary had a little lamb <break time="1s"/> Whose fleece was white as snow.
+  Emphasizing words
+  I already told you I <emphasis level="strong">really like </emphasis> that person.
+  
+  **Speed**
+  
+  For dramatic purposes, you might wish to <prosody rate="slow">slow down the speaking rate of your text.</prosody>
+  Or if you are in a hurry <prosody rate="fast">your may want to speed it up a bit.</prosody>
+  
+  **Pitch**
+  
+  Do you like sythesized speech <prosody pitch="high">with a pitch that is higher than normal?</prosody>
+  Or do you prefer your speech <prosody pitch="-20%">with a somewhat lower pitch?</prosody>
+  
+  **Whisper**
+  
+  <amazon:effect name="whispered">If you make any noise, </amazon:effect> she said, <amazon:effect name="whispered">they will hear us.</amazon:effect>
+  
+  **Conversations**
+  
+  It is possible to switch between speakers within the text. Just use the following format:
+  [speaker:Brian] Hello Emma
+  [speaker:Emma] Hey Brian
+  [speaker:Brian] How are you doing?
+  [speaker:Emma] I am fine. May i invite you to a cup of tea?
+
+  [NOTE]: 
+
+  1. Requires Internet To use ttsmp3 API.
+  2. Maximum Limit of Word is 375 and 3000 Characters.
+"
+}
+
+[[ $1 == "-sv" ]] || [[ $1 == "--show-voices" ]] && isList=1
+[[ $1 == "-h" ]] || [[ $1 == "--help" ]] && show_help && exit
+[[ $text = "" ]] && [[ $1 != "-sv"  ]] && [[ $1 != "--show-voices" ]] && [[ $1 != "-h" ]] && [[ $1 != "--help" ]] && echo "Provide Text" && exit
+[[ $lang = "" ]] && lang="Aditi" 
+
+
+[[ $2 == "-p" ]] && isPlay=1 && lang="Aditi"
+[[ $2 == "-d" ]] && isDownload=1 && lang="Aditi"
+
+[[ $3 == "-p" ]] && isPlay=1
+[[ $3 == "-d" ]] && isDownload=1 
+
+
+URL=$(curl -s -d "msg=$text&lang=$lang&source=ttsmp3" -H "Content-type: application/x-www-form-urlencoded" -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36" -H "Host: ttsmp3.com" -H "Referer: https://ttsmp3.com/" -X POST https://ttsmp3.com/makemp3_new.php | jq .'URL' | sed 's/"//g')
+
+play(){
+ffplay -loglevel quiet -autoexit -nodisp -i $URL 
+}
+
+download(){
+ffmpeg -loglevel error -stats -i "$URL" -c copy "$(pwd)/$(echo $URL | sed 's/https\:\/\/ttsmp3.com\/created_mp3\///g')" 
+}
+detail(){
+echo $URL
+}
+
+list(){
+echo "
+1. Arabic / Zeina
+2. Australian English / Russell
+3. Australian English / Nicole
+4. Brazilian Portuguese / Vitória
+5. Brazilian Portuguese / Camila
+6. Brazilian Portuguese / Ricardo
+7. British English / Emma
+8. British English / Brian
+9. British English / Amy
+10. Canadian French / Chantal
+11. Castilian Spanish / Conchita
+12. Castilian Spanish / Lucia
+13. Castilian Spanish / Enrique
+14. Chinese Mandarin / Zhiyu
+15. Danish / Naja
+16. Danish / Mads
+17. Dutch / Ruben
+18. Dutch / Lotte
+19. French / Céline
+20. French / Léa
+21. French / Mathieu
+22. German / Hans
+23. German / Vicki
+24. German / Marlene
+25. Icelandic / Dóra
+26. Icelandic / Karl
+27. Indian English / Aditi
+28. Indian English / Raveena
+29. Italian / Bianca
+30. Italian / Carla
+31. Italian / Giorgio
+32. Japanese / Takumi
+33. Japanese / Mizuki
+34. Korean / Seoyeon
+35. Mexican Spanish / Mia
+36. Norwegian / Liv
+37. Polish / Jacek
+38. Polish / Jan
+39. Polish / Maja
+40. Polish / Ewa
+41. Portuguese / Cristiano
+42. Portuguese / Inês
+43. Romanian / Carmen
+44. Russian / Maxim
+45. Russian / Tatyana
+46. Swedish / Astrid
+47. Turkish / Filiz
+48. US English / Salli
+49. US English / Ivy
+50. US English / Joey
+51. US English / Matthew
+52. US English / Kimberly
+53. US English / Kendra
+54. US English / Justin
+55. US English / Joanna
+56. US Spanish / Lupe
+57. US Spanish / Penélope
+58. US Spanish / Miguel
+59. Welsh / Gwyneth
+60. Welsh English / Geraint"
+}
+
+
+if [ $isList -eq 1 ]
+then
+  list
+fi
+
+if [ $isPlay -eq 1 ]
+then
+  play
+fi
+
+if [ $isDownload -eq 1 ]
+then
+  download
+fi
+
+if [ $isPlay -eq 0 ] && [ $isDownload -eq 0 ] && [ $isList -eq 0 ]
+then
+  detail
+fi
