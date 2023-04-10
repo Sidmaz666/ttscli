@@ -1,8 +1,8 @@
 # ttscli
 A CLI Tool that uses curl,jq and ffmpeg with <a href="https://ttsmp3.com">TTSMP3</a> API to convert Text into Speech.
 
-##USAGE
-``````
+## USAGE
+```
 ttscli [TEXT_SPEECH]
 
 ttscli 'Text Prompt Here' -p To Play using FFPLAY
@@ -12,7 +12,7 @@ ttscli -sv | ttscli --show-voices Get list of available voices
 ttscli -h | ttscli --help View Help!
 ```
 
-##PROMPT FEATURES
+## PROMPT FEATURES
 
 **Add a break**
 
@@ -42,7 +42,7 @@ It is possible to switch between speakers within the text. Just use the followin
 [speaker:Brian] How are you doing?
 [speaker:Emma] I am fine. May i invite you to a cup of tea?
 
-##NOTE
+## NOTE
 
 1. Requires Internet To use ttsmp3 API.
 2. Maximum Limit of Word is 375 and 3000 Characters.
